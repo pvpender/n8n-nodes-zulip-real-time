@@ -77,7 +77,6 @@ export class ZulipRealTimeTrigger implements INodeType {
 				},
 				useQuerystring: true
 			}));
-			console.log(registerResponse);
 			while (isPolling){
 				try{
 					const response = (await this.helpers.request({
