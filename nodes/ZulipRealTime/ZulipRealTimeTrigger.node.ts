@@ -63,7 +63,7 @@ export class ZulipRealTimeTrigger implements INodeType {
 		const abortController = new AbortController();
 		const startPolling = async() => {
 			let lastId = -1;
-			const registerResponse = (await this.helpers.request({
+			let registerResponse = (await this.helpers.request({
 				method: 'POST',
 				uri: `${credentials.url}api/v1/register`,
 				auth: {
@@ -103,11 +103,28 @@ export class ZulipRealTimeTrigger implements INodeType {
 						this.emit([this.helpers.returnJsonArray(response.events)]);
 					}
 				} catch (error) {
-					if (error.response?.status === 409 && !isPolling) {
+					if (error.status === 409 && !isPolling) {
 						console.debug('error 409, ignoring because execution is on final cleanup...');
 						continue;
 					}
 					// Добавить обработку AxiousError 400, иначе будет плохо
+					if (error.status === 400 && isPolling) {
+						registerResponse = (await this.helpers.request({
+							method: 'POST',
+							uri: `${credentials.url}api/v1/register`,
+							auth: {
+								user: String(credentials.email),
+								password: String(credentials.apiKey),
+							},
+							json: true,
+							timeout: 0,
+							qs: {
+								event_types: JSON.stringify(allowedUpdates)
+							},
+							useQuerystring: true
+						}));
+						continue;
+					}
 					throw error;
 				}
 			}
