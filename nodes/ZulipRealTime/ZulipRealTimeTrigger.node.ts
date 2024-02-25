@@ -107,6 +107,7 @@ export class ZulipRealTimeTrigger implements INodeType {
 						console.debug('error 409, ignoring because execution is on final cleanup...');
 						continue;
 					}
+					// Добавить обработку AxiousError 400, иначе будет плохо
 					throw error;
 				}
 			}
