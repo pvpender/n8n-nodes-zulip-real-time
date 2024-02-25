@@ -77,6 +77,7 @@ export class ZulipRealTimeTrigger implements INodeType {
 				},
 				useQuerystring: true
 			}));
+			console.log(registerResponse);
 			while (isPolling){
 				try{
 					const response = (await this.helpers.request({
@@ -108,7 +109,7 @@ export class ZulipRealTimeTrigger implements INodeType {
 						continue;
 					}
 					// Добавить обработку AxiousError 400, иначе будет плохо
-					if (error.status === 400 && isPolling) {
+					if (error.code === 'ERR_BAD_REQUEST') {
 						registerResponse = (await this.helpers.request({
 							method: 'POST',
 							uri: `${credentials.url}api/v1/register`,
