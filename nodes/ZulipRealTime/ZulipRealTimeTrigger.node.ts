@@ -96,7 +96,7 @@ export class ZulipRealTimeTrigger implements INodeType {
 						useQuerystring: true
 					}));
 					if (response.events.length === 0) {
-						await (new Promise(resolve => setTimeout(resolve, timeout)));
+						await (new Promise(resolve => setTimeout(resolve, timeout * 1000)));
 						continue;
 					} else {
 						lastId += response.events.length;
