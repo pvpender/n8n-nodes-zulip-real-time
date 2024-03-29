@@ -1,5 +1,4 @@
 import { INodeType, INodeTypeDescription, ITriggerResponse, ITriggerFunctions } from 'n8n-workflow';
-import { debug } from 'request-promise-native';
 
 export class ZulipRealTimeTrigger implements INodeType {
 	description: INodeTypeDescription = {
