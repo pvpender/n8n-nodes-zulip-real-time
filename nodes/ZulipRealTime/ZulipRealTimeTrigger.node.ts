@@ -1,4 +1,5 @@
 import { INodeType, INodeTypeDescription, ITriggerResponse, ITriggerFunctions } from 'n8n-workflow';
+import { debug } from 'request-promise-native';
 
 export class ZulipRealTimeTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -123,6 +124,10 @@ export class ZulipRealTimeTrigger implements INodeType {
 							},
 							useQuerystring: true
 						}));
+						continue;
+					} else if (error.code === 'RATE_LIMIT_HIT') {
+						await (new Promise(resolve => setTimeout(resolve, 5000)));
+						console.log('Rate limit, retrying after 5 seconds...');
 						continue;
 					}
 					throw error;
