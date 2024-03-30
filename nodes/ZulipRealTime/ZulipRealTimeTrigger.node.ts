@@ -61,24 +61,33 @@ export class ZulipRealTimeTrigger implements INodeType {
 		const blokingType = await this.getNodeParameter('nonblock') as boolean;
 		let isPolling = true;
 		const abortController = new AbortController();
-		const startPolling = async() => {
+		const startPolling = async () => {
 			let lastId = -1;
-			let registerResponse = (await this.helpers.request({
-				method: 'POST',
-				uri: `${credentials.url}api/v1/register`,
-				auth: {
-					user: String(credentials.email),
-					password: String(credentials.apiKey),
-				},
-				json: true,
-				timeout: 0,
-				qs: {
-					event_types: JSON.stringify(allowedUpdates)
-				},
-				useQuerystring: true
-			}));
-			while (isPolling){
-				try{
+			let registerResponse = null;
+			while (registerResponse === null) {
+				try {
+					registerResponse = (await this.helpers.request({
+						method: 'POST',
+						uri: `${credentials.url}api/v1/register`,
+						auth: {
+							user: String(credentials.email),
+							password: String(credentials.apiKey),
+						},
+						json: true,
+						timeout: 0,
+						qs: {
+							event_types: JSON.stringify(allowedUpdates)
+						},
+						useQuerystring: true
+					}));
+				} catch (error) {
+					console.log('Rate limit, retrying after 5 seconds...');
+					await (new Promise(resolve => setTimeout(resolve, 5000)));
+					continue;
+				}
+			}
+			while (isPolling) {
+				try {
 					const response = (await this.helpers.request({
 						method: 'GET',
 						uri: `${credentials.url}api/v1/events`,
@@ -123,6 +132,7 @@ export class ZulipRealTimeTrigger implements INodeType {
 							},
 							useQuerystring: true
 						}));
+						lastId = -1;
 						continue;
 					} else if (error.code === 'RATE_LIMIT_HIT') {
 						await (new Promise(resolve => setTimeout(resolve, 5000)));
@@ -132,7 +142,7 @@ export class ZulipRealTimeTrigger implements INodeType {
 					throw error;
 				}
 			}
-		} ;
+		};
 		startPolling();
 
 		const closeFunction = async () => {
