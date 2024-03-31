@@ -138,6 +138,10 @@ export class ZulipRealTimeTrigger implements INodeType {
 						await (new Promise(resolve => setTimeout(resolve, 5000)));
 						console.log('Rate limit, retrying after 5 seconds...');
 						continue;
+					} else {
+						await (new Promise(resolve => setTimeout(resolve, 30000)));
+						console.log(error);
+						continue;
 					}
 					throw error;
 				}
